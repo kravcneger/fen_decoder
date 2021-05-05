@@ -45,12 +45,7 @@ func (b *Board) MakeMove(move string) error {
 	if !valid_move.MatchString(move) {
 		return errors.New("Wrong move param")
 	}
-
-	v1 := int(move[0]) - asciNumBefore_a
-	h1 := int(move[1]) - asciNum_0
-
-	v2 := int(move[2]) - asciNumBefore_a
-	h2 := int(move[3]) - asciNum_0
+	v1, h1, v2, h2 := getIntCells(move)
 
 	if b.board[h1][v1] == 0 {
 		return fmt.Errorf("The is no figure on the %s cell", move[0:2])
@@ -100,4 +95,12 @@ func (b *Board) buildBoardMap() {
 			}
 		}
 	}
+}
+
+func getIntCells(move string) (int, int, int, int) {
+	return int(move[0]) - asciNumBefore_a, int(move[1]) - asciNum_0, int(move[2]) - asciNumBefore_a, int(move[3]) - asciNum_0
+}
+
+func getCell(ver, hor int) string {
+	return string(rune(ver+asciNumBefore_a)) + string(rune(hor+asciNum_0))
 }

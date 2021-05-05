@@ -112,3 +112,15 @@ func TestGetMovesWithFigures(t *testing.T) {
 	board.MakeMoves("e2e4 d7d5 g1f3")
 	assert.EqualValues(t, "P e2e4, p d7d5, N g1f3", board.GetMovesWithFigures())
 }
+
+func TestGetIntCells(t *testing.T) {
+	v1, h1, v2, h2 := getIntCells("d7d5")
+	assert.EqualValues(t, 4, v1)
+	assert.EqualValues(t, 4, v2)
+	assert.EqualValues(t, 7, h1)
+	assert.EqualValues(t, 5, h2)
+}
+
+func TestGetCell(t *testing.T) {
+	assert.EqualValues(t, "e2", getCell(5, 2))
+}
