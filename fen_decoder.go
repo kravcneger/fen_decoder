@@ -191,10 +191,10 @@ func (b *Board) canTwoFigureLineMove(figure rune, hor, ver int) bool {
 
 func convertIfCastling(move string) string {
 	if move == "e1g1" || move == "e8g8" {
-		return "O-0"
+		return "O-O"
 	}
 	if move == "e1c1" || move == "e8c8" {
-		return "O-0-O"
+		return "O-O-O"
 	}
 	return move
 }
