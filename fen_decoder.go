@@ -116,6 +116,7 @@ func (b *Board) addShortMove(move string) {
 
 	figure := b.board[h1][v1]
 	short_move := string(figure) + " " + move
+	short_move = convertIfCastling(move)
 
 	switch {
 	case figure == 'n' || figure == 'N':
@@ -186,6 +187,16 @@ func (b *Board) canTwoFigureLineMove(figure rune, hor, ver int) bool {
 		}
 	}
 	return count >= 2
+}
+
+func convertIfCastling(move string) string {
+	if move == "e1g1" || move == "e8g8" {
+		return "O-0"
+	}
+	if move == "e1c1" || move == "e8c8" {
+		return "O-0-O"
+	}
+	return move
 }
 
 func getIntCell(move string) (int, int) {
