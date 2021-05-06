@@ -52,7 +52,7 @@ func TestMakeMove(t *testing.T) {
 	}
 
 	if err := board.MakeMove("d3d4"); err == nil {
-		t.Fatal("The is no figure on the d3 cell")
+		t.Fatal("There is no figure on the d3 cell")
 	}
 
 	err := board.MakeMove("e2e4")
