@@ -46,7 +46,8 @@ func (b *Board) MakeMove(move string) error {
 	if !valid_move.MatchString(move) {
 		return errors.New("Wrong move param")
 	}
-	v1, h1, v2, h2 := getIntCells(move)
+	v1, h1 := getIntCell(move[:2])
+	v2, h2 := getIntCell(move[2:4])
 
 	if b.board[h1][v1] == 0 {
 		return fmt.Errorf("The is no figure on the %s cell", move[0:2])
@@ -162,8 +163,8 @@ func (b *Board) canTwoFigureLineMove(figure rune, hor, ver int) bool {
 	return count >= 2
 }
 
-func getIntCells(move string) (int, int, int, int) {
-	return int(move[0]) - asciNumBefore_a, int(move[1]) - asciNum_0, int(move[2]) - asciNumBefore_a, int(move[3]) - asciNum_0
+func getIntCell(move string) (int, int) {
+	return int(move[0]) - asciNumBefore_a, int(move[1]) - asciNum_0
 }
 
 func getCell(ver, hor int) string {
