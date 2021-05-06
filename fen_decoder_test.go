@@ -52,7 +52,7 @@ func TestMakeMove(t *testing.T) {
 	}
 
 	if err := board.MakeMove("d3d4"); err == nil {
-		t.Fatal("There is no figure on the d3 cell")
+		t.Fatal("Thereo is no figure on the d3 cell")
 	}
 
 	err := board.MakeMove("e2e4")
@@ -76,6 +76,33 @@ func TestMakeMove(t *testing.T) {
 	assert.EqualValues(t, []string{"e2e4", "d7d5"}, board.originalMoves)
 	assert.EqualValues(t, 2, board.CountMoves())
 	assert.EqualValues(t, expected, board.board)
+
+	// White rooks on a1 h1, black King on e1
+	// Black rooks on a8 h8, black King on e8
+	board.SetInitWithPosition("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")
+	// Make white short castling
+	board.MakeMove("e1g1")
+	assert.EqualValues(t, 'K', board.board[1][7], "The white King on g1")
+	assert.EqualValues(t, 'R', board.board[1][6], "The white rook moved from h1 to e1")
+	assert.EqualValues(t, "O-O", board.GetMovesWithShortForm())
+
+	// Make black short castling
+	board.MakeMove("e8g8")
+	assert.EqualValues(t, 'k', board.board[8][7], "The black King on g8")
+	assert.EqualValues(t, 'r', board.board[8][6], "The black rook moved from h8 to e8")
+	assert.EqualValues(t, "O-O, O-O", board.GetMovesWithShortForm())
+
+	board.SetInitWithPosition("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")
+	// Make white long castling
+	board.MakeMove("e1c1")
+	assert.EqualValues(t, 'K', board.board[1][3], "The white King on c1")
+	assert.EqualValues(t, 'R', board.board[1][4], "The white rook moved from a1 to d1")
+	assert.EqualValues(t, "O-O-O", board.GetMovesWithShortForm())
+	// Make black long castling
+	board.MakeMove("e8c8")
+	assert.EqualValues(t, 'k', board.board[8][3], "The black King on c8")
+	assert.EqualValues(t, 'r', board.board[8][4], "The black rook moved from a8 to d8")
+	assert.EqualValues(t, "O-O-O, O-O-O", board.GetMovesWithShortForm())
 }
 
 func TestMakeMoves(t *testing.T) {
@@ -153,6 +180,18 @@ func TestGetMovesWithFigures(t *testing.T) {
 	board.Init()
 	board.MakeMoves("e2e4 d7d5 g1f3")
 	assert.EqualValues(t, "P e2e4, p d7d5, N g1f3", board.GetMovesWithFigures())
+}
+
+func TestIsCastling(t *testing.T) {
+	board := &Board{}
+	// White rooks on a1 h1, black King on e1
+	// Black rooks on a8 h8, black King on e8
+	board.SetInitWithPosition("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")
+	assert.True(t, board.isCastling("e1g1"), "e1g1 is short white castling")
+	assert.True(t, board.isCastling("e1c1"), "e1c1 is long white castling")
+
+	assert.True(t, board.isCastling("e8g8"), "e8g8 is short black castling")
+	assert.True(t, board.isCastling("e8c8"), "e8c8 is long black castling")
 }
 
 func TestGetMovesWithShortForm(t *testing.T) {

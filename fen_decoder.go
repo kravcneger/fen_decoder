@@ -8,10 +8,21 @@ import (
 )
 
 const (
-	asciNum_0       = 48
-	asciNumBefore_a = 96
-	initialPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	asciNum_0          = 48
+	asciNumBefore_a    = 96
+	initialPosition    = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	shortWhiteCastling = "e1g1"
+	longWhiteCastling  = "e1c1"
+	shortBlackCastling = "e8g8"
+	longBlackCastling  = "e8c8"
 )
+
+var castlingAlias = map[string]string{
+	shortWhiteCastling: "O-O",
+	longWhiteCastling:  "O-O-O",
+	shortBlackCastling: "O-O",
+	longBlackCastling:  "O-O-O",
+}
 
 type Board struct {
 	initialPosition    string
@@ -23,9 +34,16 @@ type Board struct {
 }
 
 func (b *Board) SetInitWithPosition(s string) {
-	b.board = nil
+	b.Reset()
 	b.initialPosition = s
 	b.Init()
+}
+func (b *Board) Reset() {
+	b.board = nil
+	b.originalMoves = nil
+	b.movesWithFigures = nil
+	b.movesWithShortForm = nil
+	b.countMoves = 0
 }
 
 func (b *Board) CountMoves() int {
@@ -48,7 +66,6 @@ func (b *Board) MakeMove(move string) error {
 		return errors.New("Wrong move param")
 	}
 	v1, h1 := getIntCell(move[:2])
-	v2, h2 := getIntCell(move[2:4])
 
 	if b.board[h1][v1] == 0 {
 		return fmt.Errorf("The is no figure on the %s cell", move[0:2])
@@ -57,10 +74,41 @@ func (b *Board) MakeMove(move string) error {
 	b.originalMoves = append(b.originalMoves, move)
 	b.addMoveWithFigure(move)
 	b.addShortMove(move)
-	b.board[h2][v2] = b.board[h1][v1]
-	b.board[h1][v1] = 0
+	b.swapFigures(move)
 	b.countMoves++
 	return nil
+}
+
+func (b *Board) swapFigures(move string) {
+	if b.isCastling(move) {
+		switch move {
+		case shortWhiteCastling:
+			b.board[1][5] = 0
+			b.board[1][6] = 'R'
+			b.board[1][7] = 'K'
+			b.board[1][8] = 0
+		case longWhiteCastling:
+			b.board[1][5] = 0
+			b.board[1][4] = 'R'
+			b.board[1][3] = 'K'
+			b.board[1][1] = 0
+		case shortBlackCastling:
+			b.board[8][5] = 0
+			b.board[8][6] = 'r'
+			b.board[8][7] = 'k'
+			b.board[8][8] = 0
+		case longBlackCastling:
+			b.board[8][5] = 0
+			b.board[8][4] = 'r'
+			b.board[8][3] = 'k'
+			b.board[8][1] = 0
+		}
+	} else {
+		v1, h1 := getIntCell(move[:2])
+		v2, h2 := getIntCell(move[2:4])
+		b.board[h2][v2] = b.board[h1][v1]
+		b.board[h1][v1] = 0
+	}
 }
 
 func (b *Board) GetMovesWithFigures() string {
@@ -111,28 +159,31 @@ func (b *Board) addMoveWithFigure(move string) {
 }
 
 func (b *Board) addShortMove(move string) {
-	v1, h1 := getIntCell(move[:2])
-	v2, h2 := getIntCell(move[2:4])
+	short_move := ""
+	if b.isCastling(move) {
+		short_move = castlingAlias[move]
+	} else {
+		v1, h1 := getIntCell(move[:2])
+		v2, h2 := getIntCell(move[2:4])
 
-	figure := b.board[h1][v1]
-	short_move := string(figure) + " " + move
-	short_move = convertIfCastling(move)
+		figure := b.board[h1][v1]
+		short_move = string(figure) + " " + move
 
-	switch {
-	case figure == 'n' || figure == 'N':
-		if !b.canTwoKnightMove(figure, h2, v2) {
-			short_move = string(figure) + " " + move[2:4]
-		}
-	case figure == 'r' || figure == 'R':
-		if !b.canTwoFigureLineMove(figure, h2, v2) {
-			short_move = string(figure) + " " + move[2:4]
-		}
-	case figure == 'p' || figure == 'P':
-		if v1 == v2 {
-			short_move = move[2:4]
+		switch {
+		case figure == 'n' || figure == 'N':
+			if !b.canTwoKnightMove(figure, h2, v2) {
+				short_move = string(figure) + " " + move[2:4]
+			}
+		case figure == 'r' || figure == 'R':
+			if !b.canTwoFigureLineMove(figure, h2, v2) {
+				short_move = string(figure) + " " + move[2:4]
+			}
+		case figure == 'p' || figure == 'P':
+			if v1 == v2 {
+				short_move = move[2:4]
+			}
 		}
 	}
-
 	b.movesWithShortForm = append(b.movesWithShortForm, short_move)
 }
 
@@ -189,14 +240,14 @@ func (b *Board) canTwoFigureLineMove(figure rune, hor, ver int) bool {
 	return count >= 2
 }
 
-func convertIfCastling(move string) string {
-	if move == "e1g1" || move == "e8g8" {
-		return "O-O"
+func (b *Board) isCastling(move string) bool {
+	v, h := getIntCell(move[:2])
+	if b.board[h][v] == 'K' || b.board[h][v] == 'k' {
+		if move == shortWhiteCastling || move == longWhiteCastling || move == shortBlackCastling || move == longBlackCastling {
+			return true
+		}
 	}
-	if move == "e1c1" || move == "e8c8" {
-		return "O-O-O"
-	}
-	return move
+	return false
 }
 
 func getIntCell(move string) (int, int) {
