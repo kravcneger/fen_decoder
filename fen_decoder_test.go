@@ -27,7 +27,7 @@ func TestInitWithDefaultPosition(t *testing.T) {
 func TestSetInitialPosition(t *testing.T) {
 	board := &Board{}
 	// Position after e2-e4, d7-d5
-	board.SetInitialPosition("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2")
+	board.SetInitWithPosition("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2")
 	expected := map[int]map[int]rune{
 		1: {1: 'R', 2: 'N', 3: 'B', 4: 'Q', 5: 'K', 6: 'B', 7: 'N', 8: 'R'},
 		2: {1: 'P', 2: 'P', 3: 'P', 4: 'P', 5: 0, 6: 'P', 7: 'P', 8: 'P'},
@@ -103,6 +103,47 @@ func TestMakeMoves(t *testing.T) {
 	assert.EqualValues(t, []string{"P e2e4", "p d7d5", "N g1f3"}, board.movesWithFigures)
 	assert.EqualValues(t, 3, board.CountMoves())
 	assert.EqualValues(t, expected, board.board)
+}
+
+func TestCanTwoKnightMove(t *testing.T) {
+	board := &Board{}
+
+	board.Init()
+	assert.False(t, board.canTwoKnightMove('N', 6, 5))
+	assert.False(t, board.canTwoKnightMove('N', 4, 5))
+
+	// Two white Knights are on c5 and g5
+	// They can both move on e4 and e6
+	board.SetInitWithPosition("8/8/8/2N3N1/8/8/8/8 w - - 0 1")
+	// Check e6
+	assert.True(t, board.canTwoKnightMove('N', 6, 5))
+	// Check e4
+	assert.True(t, board.canTwoKnightMove('N', 4, 5))
+
+	// Two white Knights are on g5 and h8
+	// They can both move on f7
+	board.SetInitWithPosition("7N/8/8/6N1/8/8/8/8 w - - 0 1")
+	// Check f7
+	assert.True(t, board.canTwoKnightMove('N', 7, 6))
+	assert.False(t, board.canTwoKnightMove('N', 7, 7))
+}
+
+func TestСanTwoFigureLineMove(t *testing.T) {
+	board := &Board{}
+	board.Init()
+
+	// Two white Rooks are on a5 and h8
+	// They can both move on a8 and h5
+	board.SetInitWithPosition("7R/8/8/R7/8/8/8/8 w - - 0 1")
+	assert.True(t, board.canTwoFigureLineMove('R', 8, 1), "Check a8")
+	assert.True(t, board.canTwoFigureLineMove('R', 5, 8), "Check h8")
+
+	// We added black knight on e8
+	// And now, there is one white rook(a5) that can move on a8
+	board.SetInitWithPosition("4n2R/8/8/R7/8/8/8/8 w - - 0 1")
+	assert.False(t, board.canTwoFigureLineMove('R', 8, 1), "Check a8")
+	// h8 also is available
+	assert.True(t, board.canTwoFigureLineMove('R', 5, 8), "Check h8")
 }
 
 func TestGetMovesWithFigures(t *testing.T) {

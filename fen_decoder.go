@@ -21,7 +21,8 @@ type Board struct {
 	countMoves       int
 }
 
-func (b *Board) SetInitialPosition(s string) {
+func (b *Board) SetInitWithPosition(s string) {
+	b.board = nil
 	b.initialPosition = s
 	b.Init()
 }
@@ -95,6 +96,70 @@ func (b *Board) buildBoardMap() {
 			}
 		}
 	}
+}
+
+/*
+func (b *Board) addShortMove(figure rune, move string) string {
+	res := ""
+	v1, h1, v2, h2 := getIntCells(move)
+
+	switch {
+	case figure == 'n' || figure == 'N':
+
+	}
+}
+*/
+func (b *Board) canTwoKnightMove(figure rune, hor, ver int) bool {
+	ar := []int{2, 1, -2, 1, 2, -1, -2, -1, 2}
+	count := 0
+	for i := 0; i < len(ar)-1; i++ {
+		potetial_hor, potetial_ver := hor+ar[i], ver+ar[i+1]
+		if potetial_hor < 1 || potetial_hor > 8 || potetial_ver < 1 || potetial_ver > 8 {
+			continue
+		}
+		if b.board[potetial_hor][potetial_ver] == figure {
+			count++
+		}
+	}
+	return count >= 2
+}
+
+func (b *Board) canTwoFigureLineMove(figure rune, hor, ver int) bool {
+	count := 0
+	// Check right direction
+	for i := ver + 1; i <= 8; i++ {
+		if b.board[hor][i] == figure {
+			count++
+		} else if b.board[hor][i] != 0 {
+			break
+		}
+	}
+	// Check left direction
+	for i := ver - 1; i >= 1; i-- {
+		if b.board[hor][i] == figure {
+			count++
+		} else if b.board[hor][i] != 0 {
+			break
+		}
+	}
+
+	// Check top direction
+	for i := hor + 1; i <= 8; i++ {
+		if b.board[i][ver] == figure {
+			count++
+		} else if b.board[i][ver] != 0 {
+			break
+		}
+	}
+	// Check bottom direction
+	for i := hor - 1; i >= 1; i-- {
+		if b.board[i][ver] == figure {
+			count++
+		} else if b.board[i][ver] != 0 {
+			break
+		}
+	}
+	return count >= 2
 }
 
 func getIntCells(move string) (int, int, int, int) {
