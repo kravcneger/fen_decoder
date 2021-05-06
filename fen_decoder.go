@@ -243,7 +243,7 @@ func (b *Board) canTwoFigureLineMove(figure rune, hor, ver int) bool {
 func (b *Board) isCastling(move string) bool {
 	v, h := getIntCell(move[:2])
 	if b.board[h][v] == 'K' || b.board[h][v] == 'k' {
-		if move == shortWhiteCastling || move == longWhiteCastling || move == shortBlackCastling || move == longBlackCastling {
+		if _, ok := castlingAlias[move]; ok == true {
 			return true
 		}
 	}
