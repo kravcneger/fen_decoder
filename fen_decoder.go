@@ -14,11 +14,12 @@ const (
 )
 
 type Board struct {
-	initialPosition  string
-	board            map[int]map[int]rune
-	originalMoves    []string
-	movesWithFigures []string
-	countMoves       int
+	initialPosition    string
+	board              map[int]map[int]rune
+	originalMoves      []string
+	movesWithFigures   []string
+	movesWithShortForm []string
+	countMoves         int
 }
 
 func (b *Board) SetInitWithPosition(s string) {
@@ -53,16 +54,21 @@ func (b *Board) MakeMove(move string) error {
 		return fmt.Errorf("The is no figure on the %s cell", move[0:2])
 	}
 
+	b.originalMoves = append(b.originalMoves, move)
+	b.addMoveWithFigure(move)
+	b.addShortMove(move)
 	b.board[h2][v2] = b.board[h1][v1]
 	b.board[h1][v1] = 0
-	b.originalMoves = append(b.originalMoves, move)
-	b.movesWithFigures = append(b.movesWithFigures, string(b.board[h2][v2])+" "+move)
 	b.countMoves++
 	return nil
 }
 
 func (b *Board) GetMovesWithFigures() string {
 	return strings.Join(b.movesWithFigures, ", ")
+}
+
+func (b *Board) GetMovesWithShortForm() string {
+	return strings.Join(b.movesWithShortForm, ", ")
 }
 
 func (b *Board) Init() {
@@ -99,17 +105,36 @@ func (b *Board) buildBoardMap() {
 	}
 }
 
-/*
-func (b *Board) addShortMove(figure rune, move string) string {
-	res := ""
-	v1, h1, v2, h2 := getIntCells(move)
+func (b *Board) addMoveWithFigure(move string) {
+	v, h := getIntCell(move[:2])
+	b.movesWithFigures = append(b.movesWithFigures, string(b.board[h][v])+" "+move)
+}
+
+func (b *Board) addShortMove(move string) {
+	v1, h1 := getIntCell(move[:2])
+	v2, h2 := getIntCell(move[2:4])
+
+	figure := b.board[h1][v1]
+	short_move := string(figure) + " " + move
 
 	switch {
 	case figure == 'n' || figure == 'N':
-
+		if !b.canTwoKnightMove(figure, h2, v2) {
+			short_move = string(figure) + " " + move[2:4]
+		}
+	case figure == 'r' || figure == 'R':
+		if !b.canTwoFigureLineMove(figure, h2, v2) {
+			short_move = string(figure) + " " + move[2:4]
+		}
+	case figure == 'p' || figure == 'P':
+		if v1 == v2 {
+			short_move = move[2:4]
+		}
 	}
+
+	b.movesWithShortForm = append(b.movesWithShortForm, short_move)
 }
-*/
+
 func (b *Board) canTwoKnightMove(figure rune, hor, ver int) bool {
 	ar := []int{2, 1, -2, 1, 2, -1, -2, -1, 2}
 	count := 0

@@ -101,6 +101,7 @@ func TestMakeMoves(t *testing.T) {
 
 	assert.EqualValues(t, []string{"e2e4", "d7d5", "g1f3"}, board.originalMoves)
 	assert.EqualValues(t, []string{"P e2e4", "p d7d5", "N g1f3"}, board.movesWithFigures)
+	assert.EqualValues(t, []string{"e4", "d5", "N f3"}, board.movesWithShortForm)
 	assert.EqualValues(t, 3, board.CountMoves())
 	assert.EqualValues(t, expected, board.board)
 }
@@ -152,6 +153,14 @@ func TestGetMovesWithFigures(t *testing.T) {
 	board.Init()
 	board.MakeMoves("e2e4 d7d5 g1f3")
 	assert.EqualValues(t, "P e2e4, p d7d5, N g1f3", board.GetMovesWithFigures())
+}
+
+func TestGetMovesWithShortForm(t *testing.T) {
+	board := &Board{}
+
+	board.Init()
+	board.MakeMoves("e2e4 d7d5 g1f3")
+	assert.EqualValues(t, "e4, d5, N f3", board.GetMovesWithShortForm())
 }
 
 func TestGetIntCell(t *testing.T) {
